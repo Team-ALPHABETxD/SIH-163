@@ -1,0 +1,6 @@
+{
+  "name": "Sentinel - Security Assessment Platform",
+  "description": "Authorized web application security assessment, vulnerability analysis, and remediation platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

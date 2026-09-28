@@ -1,0 +1,46 @@
+name: VulnWeave Security Gate
+
+# Demonstrates the "continuous security assurance" pitch: run the same
+# assessment pipeline against the local Attack Lab on every push/PR and
+# fail the build if critical/high findings exceed the configured threshold.
+# This never touches an external target -- it only ever points at the
+# Dockerized local lab spun up in this workflow.
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      max_critical:
+        description: 'Fail the build if critical findings exceed this count'
+        default: '1'
+      max_high:
+        description: 'Fail the build if high findings exceed this count'
+        default: '4'
+
+jobs:
+  security-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start the stack (backend + local Attack Lab)
+        run: docker compose up -d --build backend demo-target postgres
+
+      - name: Wait for backend to be healthy
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/api/health && break
+            sleep 2
+          done
+
+      - name: Authorize the local target and run an assessment
+        run: |
+          python3 -m pip install requests --quiet
+          python3 scripts/ci_security_gate.py \
+            --base-url http://localhost:8000/api \
+            --max-critical "${{ github.event.inputs.max_critical || 1 }}" \
+            --max-high "${{ github.event.inputs.max_high || 4 }}"
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

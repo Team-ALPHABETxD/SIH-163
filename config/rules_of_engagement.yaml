@@ -1,0 +1,20 @@
+project: VulnWeave-SIH-26163
+mode: local-sandbox
+authorization:
+  required: true
+  active_testing_allowed: true
+scope:
+  allowed_hosts:
+    - demo-target
+    - localhost
+  allowed_ports: [9000]
+limits:
+  max_requests_per_second: 5
+  max_scan_duration_minutes: 10
+  max_concurrent_modules: 1
+safety:
+  destructive_payloads: false
+  data_extraction: false
+  persistence: false
+  production_testing: false
+  credentials: test-only
